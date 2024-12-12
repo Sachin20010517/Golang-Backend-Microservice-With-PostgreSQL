@@ -41,5 +41,15 @@ Ensure you have the following installed:
 
    ```bash
    git clone https://github.com/your-username/employee-management.git
-   cd employee-management
+   cd Golang-Backend-Microservice-With-PostgreSQL
+   
+2. **Install dependencies**:
+
+   ```bash
+   go mod tidy
+   
+3. **Run the application**:
+
+   ```bash
+   go run main.go
 
