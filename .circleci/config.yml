@@ -15,8 +15,6 @@ jobs:
       # Mount Docker socket from CircleCI host to container
       - setup_remote_docker:
           docker_layer_caching: true  # Enable Docker layer caching (optional for faster builds)
-          service: docker  # This will allow access to Docker
-          overwrite: true  # Allow overriding the default Docker socket setup
 
       # Docker login to Docker Hub
       - run:
@@ -46,7 +44,7 @@ jobs:
       - run:
           name: SSH to Remote VPS
           command: |
-            sshpass -p $HOST_PASSWORD ssh -o StrictHostKeyChecking=no $HOST_USERNAME@$HOST_IP <<'EOF'
+            sshpass -p $HOST_PASSWORD ssh -o StrictHostKeyChecking=no $HOST_USERNAME@$HOST_IP <<EOF
             export SERVER_NAME="${BE_URL}"
             export SOURCE_PORT="13662"
             export TARGET_PORT="8888"
