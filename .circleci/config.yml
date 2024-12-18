@@ -31,12 +31,42 @@ jobs:
             docker build -t $CIRCLECI_DOCKER_USERNAME/golang-pstgresql-microservice:latest .
             docker push $CIRCLECI_DOCKER_USERNAME/golang-pstgresql-microservice:latest
 
+  deploy:
+    docker:
+      - image: cimg/python:3.8  # A minimal image for SSH; you can choose another image if needed
+    steps:
+      - checkout  # Checkout the code again for any necessary context
+
+      # Install sshpass for SSH connection
+      - run:
+          name: Install sshpass
+          command: sudo apt-get install sshpass -y
+
+      # SSH to Remote VPS and execute commands
+      - run:
+          name: SSH to Remote VPS
+          command: |
+            sshpass -p $HOST_PASSWORD ssh -o StrictHostKeyChecking=no $HOST_USERNAME@$HOST_IP << 'EOF'
+            export SERVER_NAME="${BE_URL}"
+            export SOURCE_PORT="13662"
+            export TARGET_PORT="8888"
+            export DEPLOY_DIRECTORY="Golang-PostgreSQL"
+            export SERVICE_NAME="golang-pstgresql-microservice"
+            export DOCKER_USER_NAME=$CIRCLECI_DOCKER_USERNAME
+            export REPO_NAME="golang-pstgresql-microservice"
+            cd /root/
+            ls
+            bash ./HostScriptLatest.sh
+            EOF
+
 workflows:
   version: 2
   build-and-deploy:
     jobs:
       - build
-
+      - deploy:
+          requires:
+            - build  # Ensure the build job runs first before deployment
 
 
 
