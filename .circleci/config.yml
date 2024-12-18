@@ -1,0 +1,95 @@
+version: 2.1
+
+executors:
+  default-executor:
+    docker:
+      - image: cimg/base:stable
+
+jobs:
+  build:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      
+      - run:
+          name: Build & Push Docker Image
+          command: |
+            docker login -u $CIRCLECI_DOCKER_USERNAME -p $CIRCLECI_DOCKER_ACCESSCODE
+            docker build -t $CIRCLECI_DOCKER_USERNAME/golang-pstgresql-microservice:latest .
+            docker push $CIRCLECI_DOCKER_USERNAME/golang-pstgresql-microservice:latest
+
+      # - run:
+      #     name: SSH to Remote VPS
+      #     command: |
+      #       sshpass -p $HOST_PASSWORD ssh -o StrictHostKeyChecking=no $HOST_USERNAME@$HOST_IP << 'EOF'
+      #       export SERVER_NAME="${BE_URL}"
+      #       export SOURCE_PORT="16662"
+      #       export TARGET_PORT="8888"
+      #       export DEPLOY_DIRECTORY="Golang-PostgreSQL"
+      #       export SERVICE_NAME="employeemanagement-app1662"
+      #       export DOCKER_USER_NAME="evolza"
+      #       export REPO_NAME="employeemanagement-app1662"
+      #       cd /root/
+      #       ls
+      #       bash ./HostScriptLatest.sh
+      #       EOF
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+
+
+
+
+
+# version: 2.1
+
+# executors:
+#   default-executor:
+#     docker:
+#       - image: cimg/base:stable
+
+# jobs:
+#   build-and-push:
+#     docker:
+#       - image: cimg/base:stable
+#     steps:
+#       - checkout
+#       - run:
+#           name: Build & Push Docker Image
+#           command: |
+#             docker login -u $CIRCLECI_DOCKER_USERNAME -p $CIRCLECI_DOCKER_ACCESSCODE
+#             docker build -t $CIRCLECI_DOCKER_USERNAME/employeemanagement-app1662:latest .
+#             docker push $CIRCLECI_DOCKER_USERNAME/employeemanagement-app1662:latest
+
+#   deploy-to-vps:
+#     docker:
+#       - image: cimg/base:stable
+#     steps:
+#       - run:
+#           name: SSH to Remote VPS
+#           command: |
+#             sshpass -p $HOST_PASSWORD ssh -o StrictHostKeyChecking=no $HOST_USERNAME@$HOST_IP << 'EOF'
+#             export SERVER_NAME="${BE_URL}"
+#             export SOURCE_PORT="16662"
+#             export TARGET_PORT="8888"
+#             export DEPLOY_DIRECTORY="Bellagio"
+#             export SERVICE_NAME="employeemanagement-app1662"
+#             export DOCKER_USER_NAME="evolza"
+#             export REPO_NAME="employeemanagement-app1662"
+#             cd /root/
+#             ls
+#             bash ./HostScriptLatest.sh
+#             EOF
+
+# workflows:
+#   version: 2
+#   build-and-deploy:
+#     jobs:
+#       - build-and-push
+#       - deploy-to-vps:
+#           requires:
+#             - build-and-push
