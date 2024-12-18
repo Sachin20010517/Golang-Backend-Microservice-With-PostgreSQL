@@ -3,8 +3,8 @@ version: 2.1
 executors:
   default-executor:
     docker:
-      - image: cimg/go:1.20  # Use CircleCI's Go image, which has Go preinstalled
-    working_directory: ~/repo  # Optional, set working directory
+      - image: cimg/go:1.20  # Use CircleCI's Go image for building Go applications
+    working_directory: ~/repo  # Set working directory to the repository
 
 jobs:
   build:
@@ -12,12 +12,20 @@ jobs:
     steps:
       - checkout  # Checkout your code
 
+      # Mount Docker socket from CircleCI host to container
+      - setup_remote_docker:
+          version: 20.10.7  # Specify the Docker version you want
+          docker_layer_caching: true  # Enable Docker layer caching (optional for faster builds)
+          service: docker  # This will allow access to Docker
+          overwrite: true  # Allow overriding the default Docker socket setup
+
+      # Docker login to Docker Hub
       - run:
-          name: Set up Docker
+          name: Docker Login
           command: |
             echo $CIRCLECI_DOCKER_ACCESSCODE | docker login -u $CIRCLECI_DOCKER_USERNAME --password-stdin
-            docker info  # Verify Docker is working
 
+      # Build and push Docker image
       - run:
           name: Build & Push Docker Image
           command: |
