@@ -4,45 +4,35 @@ executors:
   default-executor:
     docker:
       - image: golang:1.20  # Use the appropriate version of Go for your app
-      - image: docker:stable-dind
+      - image: docker:stable-dind  # Docker-in-Docker image for building Docker images
         environment:
-          DOCKER_TLS_CERTDIR: ""
+          DOCKER_TLS_CERTDIR: ""  # Disable TLS for Docker in Docker
 
 jobs:
   build:
-    docker:
-      - image: cimg/base:stable
+    executor: default-executor
     steps:
-      - checkout
-      
+      - checkout  # Checkout your code
+
+      - run:
+          name: Start Docker Daemon
+          command: |
+            service docker start  # Start the Docker daemon
+            docker info  # Verify Docker is running
+
       - run:
           name: Build & Push Docker Image
           command: |
-            docker login -u $CIRCLECI_DOCKER_USERNAME -p $CIRCLECI_DOCKER_ACCESSCODE
+            echo $CIRCLECI_DOCKER_ACCESSCODE | docker login -u $CIRCLECI_DOCKER_USERNAME --password-stdin
             docker build -t $CIRCLECI_DOCKER_USERNAME/golang-pstgresql-microservice:latest .
             docker push $CIRCLECI_DOCKER_USERNAME/golang-pstgresql-microservice:latest
-
-      # - run:
-      #     name: SSH to Remote VPS
-      #     command: |
-      #       sshpass -p $HOST_PASSWORD ssh -o StrictHostKeyChecking=no $HOST_USERNAME@$HOST_IP << 'EOF'
-      #       export SERVER_NAME="${BE_URL}"
-      #       export SOURCE_PORT="16662"
-      #       export TARGET_PORT="8888"
-      #       export DEPLOY_DIRECTORY="Golang-PostgreSQL"
-      #       export SERVICE_NAME="employeemanagement-app1662"
-      #       export DOCKER_USER_NAME="evolza"
-      #       export REPO_NAME="employeemanagement-app1662"
-      #       cd /root/
-      #       ls
-      #       bash ./HostScriptLatest.sh
-      #       EOF
 
 workflows:
   version: 2
   build-and-deploy:
     jobs:
       - build
+
 
 
 
